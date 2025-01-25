@@ -2,6 +2,7 @@ import { Router } from "express";
 import Items from "../models/Items.js";
 import Category from "../models/Category.js";
 import { clearHash } from "../helpers/cache.js";
+import SubCategory from "../models/SubCategory.js";
 export const ItemsRouter = Router();
 ItemsRouter.get("/", async(req, res) => { 
     //getting all items
@@ -89,7 +90,61 @@ ItemsRouter.post("/category/:category", async(req, res) => {
 ItemsRouter.get("/category/:category",async(req,res)=>{
     //getting items under a category
     try{
-
+        const categoryName = req.params.category;
+        const pipeline = [
+            //step1:match the category by name
+            {
+              $match: {
+                name: categoryName,
+              },
+            },
+            //step2:lookup to join the items collection
+            {
+              $lookup: {
+                from: "items",
+                localField: "name", 
+                foreignField: "categoryName", 
+                as: "items", 
+              },
+            },
+            // step4:make required feild 
+            {
+              $project: {
+                _id: 0,
+                categoryName: "$name",
+                items: {
+                  name: 1,
+                  image: 1,
+                  description: 1,
+                  baseAmount: 1,
+                  discount: 1,
+                  taxApplicable: 1,
+                  tax: 1,
+                  finalPrice: {
+                    $add: [
+                      { $subtract: ["$baseAmount", "$discount"] },
+                      {
+                        $cond: [
+                          "$taxApplicable",
+                          { $multiply: ["$baseAmount", { $divide: ["$tax", 100] }] },
+                          0,
+                        ],
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          ];
+          const result = await Category.aggregate(pipeline);
+      
+          if (result.length === 0 || !result[0].items.length) {
+           res.status(404).json({ error: "No items found" });
+           return;
+          }
+      
+          console.log("Fetched Items:", result);
+         res.status(200).json({ result });
     }catch(err){
         console.log(err);
         res.status(400).json({error:"Err :"+err});
@@ -99,7 +154,61 @@ ItemsRouter.get("/category/:category",async(req,res)=>{
 ItemsRouter.get("/subcategory/:subcategory",async(req,res)=>{
     //getting items under subcategory
     try{
-
+        const subcategoryName = req.params.subcategory;
+        const pipeline = [
+            //step1:match the category by name
+            {
+              $match: {
+                name: subcategoryName,
+              },
+            },
+            //step2:lookup to join the items collection
+            {
+              $lookup: {
+                from: "items",
+                localField: "name", 
+                foreignField: "subcategoryName", 
+                as: "items", 
+              },
+            },
+            // step4:make required feild 
+            {
+              $project: {
+                _id: 0,
+                subcategoryName: "$name",
+                items: {
+                  name: 1,
+                  image: 1,
+                  description: 1,
+                  baseAmount: 1,
+                  discount: 1,
+                  taxApplicable: 1,
+                  tax: 1,
+                  finalPrice: {
+                    $add: [
+                      { $subtract: ["$baseAmount", "$discount"] },
+                      {
+                        $cond: [
+                          "$taxApplicable",
+                          { $multiply: ["$baseAmount", { $divide: ["$tax", 100] }] },
+                          0,
+                        ],
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          ];
+          const result = await SubCategory.aggregate(pipeline);
+      
+          if (result.length === 0 || !result[0].items.length) {
+           res.status(404).json({ error: "No items found" });
+           return;
+          }
+      
+          console.log("Fetched Items:", result);
+         res.status(200).json({ result });
     }catch(err){
         console.log(err);
         res.status(400).json({error:"Err :"+err});
