@@ -7,10 +7,11 @@ import helmet from "helmet";
 import { Request, Response, NextFunction } from "express";
 import morgan from "morgan";
 import { router } from "./routes/index.js";
+import { rateLimit } from "./helpers/rate-limit.js";
 dotenv.config();
 
 const app = express();
-
+app.use(rateLimit);
 app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
