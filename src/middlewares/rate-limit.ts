@@ -1,19 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { createClient } from "redis";
-const redisUrl = process.env.redisUrl || "redis://127.0.0.1:6379";
-const client = createClient({
-  url: redisUrl,
-});
-client.on("error", (err) => console.error("Redis Client Error", err));
-async function connectRedis() {
-  try {
-    await client.connect();
-    console.log("Connected to Redis");
-  } catch (err) {
-    console.error("Could not connect to Redis", err);
-  }
-}
-connectRedis();
+import { client } from "../helpers/cache.js";
+
 export const rateLimit = async(req:Request, res:Response, next:NextFunction) => {
     const key =(req.headers['x-forwarded-for'] || req.connection.remoteAddress)?.slice(0,9) as string;
     const requests = await client.incr(key);

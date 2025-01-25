@@ -7,7 +7,7 @@ import { createClient } from "redis";
 //mongoose orm modification to embed redis in it
 // modify redis url according
 const redisUrl = process.env.redisUrl || "redis://127.0.0.1:6379";
-const client = createClient({
+export const client = createClient({
   url: redisUrl,
 });
 
