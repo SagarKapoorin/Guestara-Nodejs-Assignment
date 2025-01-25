@@ -23,6 +23,7 @@ export const rateLimit = async(req:Request, res:Response, next:NextFunction) => 
     }
     if(requests>60){
     const ttl= await client.ttl(key);
+    //getting time to live of key
      res.status(429).send("Too many requests, please try again in "+ttl+" seconds");
      return;
     }else{
