@@ -7,7 +7,7 @@ import helmet from "helmet";
 import { Request, Response, NextFunction } from "express";
 import morgan from "morgan";
 import { router } from "./routes/index.js";
-import { rateLimit } from "./helpers/rate-limit.js";
+import { rateLimit } from "./middlewares/rate-limit.js";
 dotenv.config();
 
 const app = express();
