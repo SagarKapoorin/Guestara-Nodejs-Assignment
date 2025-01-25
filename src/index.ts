@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import { Request, Response, NextFunction } from "express";
 import morgan from "morgan";
+import { router } from "./routes/index.js";
 dotenv.config();
 
 const app = express();
@@ -22,6 +23,7 @@ app.use(
     credentials: true,
   })
 );
+app.use("/",router);
 
 const PORT: string = process.env.PORT || "3000";
 // console.log(PORT);

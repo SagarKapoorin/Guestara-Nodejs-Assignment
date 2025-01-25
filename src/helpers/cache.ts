@@ -4,7 +4,7 @@ import { Error } from "mongoose";
 import mongoose from "mongoose";
 const exec = mongoose.Query.prototype.exec;
 import { createClient } from "redis";
-
+//mongoose orm modification to embed redis in it
 // modify redis url according
 const redisUrl = process.env.redisUrl || "redis://127.0.0.1:6379";
 const client = createClient({
@@ -51,8 +51,9 @@ mongoose.Query.prototype.exec = async function () {
   if (!this.useCache) {
     return exec.apply(this, arguments as unknown as []);
   }
-  console.log(this.getQuery());
-  console.log(this.mongooseCollection.name);
+  //storing in form of key->query+collection name->output
+  console.log(this.getQuery());//query
+  console.log(this.mongooseCollection.name);//collection name
   const result = JSON.stringify(
     Object.assign({}, this.getQuery(), {
       collection: this.mongooseCollection.name,
@@ -73,7 +74,7 @@ mongoose.Query.prototype.exec = async function () {
     console.log("SERVING FROM MongoDB");
     const output = await exec.apply(this, arguments as unknown as []);
     await client.hSet(this.hashKey, result, JSON.stringify(output));
-    await client.expire(this.hashKey, 86400 * 5); //5 days
+    await client.expire(this.hashKey, 86400 * 5); //5 days expiry
     return output;
   }
 };
