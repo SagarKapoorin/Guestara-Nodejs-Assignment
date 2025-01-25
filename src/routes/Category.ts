@@ -1,6 +1,7 @@
 import { Router } from "express";
 import Category from "../models/Category.js";
 import { clearHash } from "../helpers/cache.js";
+import { CategorySchema } from "../types/index.js";
 export const CategoryRouter = Router();
 CategoryRouter.get("/", async(req, res) => { 
     //to display all category
@@ -15,6 +16,11 @@ try{
 CategoryRouter.post("/", async(req, res) => { 
     //making new category
     try{
+         const parsedData=CategorySchema.safeParse(req.body);
+                if (!parsedData.success) {
+                    res.status(400).json({ message: "Validation failed" });
+                    return;
+        }  
         const { name, image, description, taxApplicable, tax, taxType } = req.body;
         const newCategory=new Category({
           name,

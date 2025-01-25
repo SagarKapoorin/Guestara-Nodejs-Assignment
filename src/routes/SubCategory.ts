@@ -2,6 +2,7 @@ import { Router } from "express";
 import SubCategory from "../models/SubCategory.js";
 import { clearHash } from "../helpers/cache.js";
 import Category from "../models/Category.js";
+import { SubCategorySchema } from "../types/index.js";
 export const SubCategoryRouter = Router();
 SubCategoryRouter.get("/", async(req, res) => { 
     try{
@@ -15,17 +16,22 @@ SubCategoryRouter.get("/", async(req, res) => {
 })
 SubCategoryRouter.post("/", async(req, res) => { 
     try {
-        const { name, image, description, categoryId, taxApplicable, tax } = req.body;
-        const categoryExists = await Category.findById(categoryId);
+        const parsedData = SubCategorySchema.safeParse(req.body);
+        if (!parsedData.success) {
+            res.status(400).json({ message: "Validation failed" });
+            return;
+          }        
+        const { name, image, description, category, taxApplicable, tax } = req.body;
+        const categoryExists = await Category.findOne({name:category});
         if (!categoryExists) {
-           res.status(400).json({ error: 'Invalid category ID' });
+           res.status(400).json({ error: 'Invalid category name' });
            return;
         }
         const newSubcategory= new SubCategory({
           name,
           image,
           description,
-          categoryId,
+          categoryId: categoryExists._id,
           taxApplicable,
           tax,
         });
