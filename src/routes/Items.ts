@@ -1,11 +1,12 @@
 import { Router } from "express";
 import Items from "../models/Items.js";
 import Category from "../models/Category.js";
+import { clearHash } from "../helpers/cache.js";
 export const ItemsRouter = Router();
 ItemsRouter.get("/", async(req, res) => { 
     //getting all items
   try{
-    const Itemss=await Items.find().cache({key:"Items1"});
+    const Itemss=await Items.find().cache({key:"Items"});
     res.status(200).json({Items:Itemss});
     }catch(err){
         console.log(err);
@@ -75,7 +76,9 @@ ItemsRouter.post("/category/:category", async(req, res) => {
             },
           },
         ];
-    
+        //clearing cache
+        await clearHash("Items");
+        
         const result = await Category.aggregate(pipeline as any[]);
         res.status(200).json({ result });   
     }catch(err){
@@ -107,7 +110,7 @@ ItemsRouter.get("/:name",async(req,res)=>{
     //getting item under name
      try{
         const name=req.params;
-        const Item=await Items.find({name:name}).cache({key:"Items2"});
+        const Item=await Items.find({name:name}).cache({key:"Items"});
         res.status(200).json({Item:Item});
         }catch(err){
             console.log(err);

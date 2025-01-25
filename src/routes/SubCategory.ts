@@ -3,7 +3,7 @@ import SubCategory from "../models/SubCategory.js";
 export const SubCategoryRouter = Router();
 SubCategoryRouter.get("/", async(req, res) => { 
     try{
-    const SubCategories=await SubCategory.find().cache({key:"SubCategory1"});
+    const SubCategories=await SubCategory.find().cache({key:"SubCategory"});
     res.status(200).json({SubCategories:SubCategories});
     }catch(err){
         console.log(err);
@@ -31,7 +31,7 @@ SubCategoryRouter.get("/category/:category",async(req,res)=>{
 SubCategoryRouter.get("/:name",async(req,res)=>{
     try{
     const name=req.params;
-    const SubCategor=await SubCategory.find({name:name}).cache({key:"Subcategory2"});
+    const SubCategor=await SubCategory.find({name:name}).cache({key:"SubCategory"});
     res.status(200).json({SubCategory:SubCategor});
     }catch(err){
         console.log(err);
