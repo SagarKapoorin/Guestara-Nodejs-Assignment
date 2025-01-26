@@ -12,7 +12,7 @@ export interface Item_Schema extends Document {
   totalAmount: number;
 }
 const ItemSchema: Schema = new Schema({
-  name: { type: String, required: true },
+  name: { type: String, required: true, index:true },
   image: { type: String },
   description: { type: String },
   categoryId: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
@@ -28,5 +28,5 @@ const ItemSchema: Schema = new Schema({
   discount: { type: Number, default: 0 },
   totalAmount: { type: Number, required: true },
 });
-ItemSchema.index({ name: 1 });
+// ItemSchema.index({ name: 1 });
 export default mongoose.model<Item_Schema>('Item', ItemSchema);

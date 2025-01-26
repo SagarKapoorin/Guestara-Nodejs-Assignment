@@ -60,7 +60,7 @@ SubCategoryRouter.get("/category/:category",async(req,res)=>{
 })
 SubCategoryRouter.get("/:name",async(req,res)=>{
     try{
-    const name=req.params;
+    const {name}=req.params;
     const SubCategor=await SubCategory.find({name:name}).cache({key:"SubCategory"});
     res.status(200).json({SubCategory:SubCategor});
     }catch(err){

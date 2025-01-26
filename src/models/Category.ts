@@ -8,7 +8,7 @@ export interface ICategory extends Document {
   taxType: string;
 }
 const CategorySchema= new Schema({
-  name: { type: String, required: true, unique: true },
+  name: { type: String, required: true, unique: true , index:true},
   image: { type: String, required: true },
   description: { type: String },
   taxApplicable: { type: Boolean, required: true, default: false },
@@ -25,5 +25,4 @@ const CategorySchema= new Schema({
     },
   },
 });
-CategorySchema.index({ name: 1 });
 export default mongoose.model<ICategory>('Category', CategorySchema);

@@ -14,7 +14,7 @@ ItemsRouter.get("/", async(req, res) => {
         res.status(400).json({message:"Error "+err});
     }
 })
-ItemsRouter.post("/category/:category", async(req, res) => { 
+ItemsRouter.post("/", async(req, res) => { 
     //creating item under category or subcategory
     try{
         const { name, image, description, baseAmount, discount, categoryName, subCategoryName, taxApplicable, tax } = req.body;
@@ -22,6 +22,18 @@ ItemsRouter.post("/category/:category", async(req, res) => {
         if(!(categoryName && subCategoryName)){
              res.status(400).json({ error: "categoryName or subCategoryName is required" });
              return;
+        }
+        const categoryMatch = await Category.findOne({
+          $or: [
+            { name: categoryName || null }, // Check category name
+            { name: subCategoryName || null }, // Check subcategory name
+          ],
+        });
+      
+        //If no category or subcategory matches, send a failure response
+        if (!categoryMatch) {
+          res.status(404).json({ error: "No matching category or subcategory found" });
+          return;
         }
         //aggregation pipeline
         const pipeline = [
@@ -81,7 +93,7 @@ ItemsRouter.post("/category/:category", async(req, res) => {
         await clearHash("Items");
         
         const result = await Category.aggregate(pipeline as any[]);
-        res.status(200).json({ result });   
+        res.status(200).json({ message:"Successfully Created" });   
     }catch(err){
         console.log(err);
         res.status(400).json({error:"Err :"+err});
@@ -90,55 +102,9 @@ ItemsRouter.post("/category/:category", async(req, res) => {
 ItemsRouter.get("/category/:category",async(req,res)=>{
     //getting items under a category
     try{
-        const categoryName = req.params.category;
-        const pipeline = [
-            //step1:match the category by name
-            {
-              $match: {
-                name: categoryName,
-              },
-            },
-            //step2:lookup to join the items collection
-            {
-              $lookup: {
-                from: "items",
-                localField: "name", 
-                foreignField: "categoryName", 
-                as: "items", 
-              },
-            },
-            // step4:make required feild 
-            {
-              $project: {
-                _id: 0,
-                categoryName: "$name",
-                items: {
-                  name: 1,
-                  image: 1,
-                  description: 1,
-                  baseAmount: 1,
-                  discount: 1,
-                  taxApplicable: 1,
-                  tax: 1,
-                  finalPrice: {
-                    $add: [
-                      { $subtract: ["$baseAmount", "$discount"] },
-                      {
-                        $cond: [
-                          "$taxApplicable",
-                          { $multiply: ["$baseAmount", { $divide: ["$tax", 100] }] },
-                          0,
-                        ],
-                      },
-                    ],
-                  },
-                },
-              },
-            },
-          ];
-          const result = await Category.aggregate(pipeline);
+        const result=await Items.find({category:req.params.category}).cache({key:"Items"});
       
-          if (result.length === 0 || !result[0].items.length) {
+          if (result.length === 0) {
            res.status(404).json({ error: "No items found" });
            return;
           }
@@ -154,55 +120,9 @@ ItemsRouter.get("/category/:category",async(req,res)=>{
 ItemsRouter.get("/subcategory/:subcategory",async(req,res)=>{
     //getting items under subcategory
     try{
-        const subcategoryName = req.params.subcategory;
-        const pipeline = [
-            //step1:match the category by name
-            {
-              $match: {
-                name: subcategoryName,
-              },
-            },
-            //step2:lookup to join the items collection
-            {
-              $lookup: {
-                from: "items",
-                localField: "name", 
-                foreignField: "subcategoryName", 
-                as: "items", 
-              },
-            },
-            // step4:make required feild 
-            {
-              $project: {
-                _id: 0,
-                subcategoryName: "$name",
-                items: {
-                  name: 1,
-                  image: 1,
-                  description: 1,
-                  baseAmount: 1,
-                  discount: 1,
-                  taxApplicable: 1,
-                  tax: 1,
-                  finalPrice: {
-                    $add: [
-                      { $subtract: ["$baseAmount", "$discount"] },
-                      {
-                        $cond: [
-                          "$taxApplicable",
-                          { $multiply: ["$baseAmount", { $divide: ["$tax", 100] }] },
-                          0,
-                        ],
-                      },
-                    ],
-                  },
-                },
-              },
-            },
-          ];
-          const result = await SubCategory.aggregate(pipeline);
+        const result=await Items.find({subCategory:req.params.subcategory}).cache({key:"Items"});
       
-          if (result.length === 0 || !result[0].items.length) {
+          if (result.length === 0) {
            res.status(404).json({ error: "No items found" });
            return;
           }
@@ -218,7 +138,7 @@ ItemsRouter.get("/subcategory/:subcategory",async(req,res)=>{
 ItemsRouter.get("/:name",async(req,res)=>{
     //getting item under name
      try{
-        const name=req.params;
+        const {name}=req.params;
         const Item=await Items.find({name:name}).cache({key:"Items"});
         res.status(200).json({Item:Item});
         }catch(err){

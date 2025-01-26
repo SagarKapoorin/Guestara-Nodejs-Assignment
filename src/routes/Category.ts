@@ -42,7 +42,7 @@ CategoryRouter.post("/", async(req, res) => {
 CategoryRouter.get("/:name",async(req,res)=>{
     //display a category by name
  try{
-    const name=req.params;
+    const {name}=req.params;
     const Categor=await Category.find({name:name}).cache({key:"Category"});
     res.status(200).json({Category:Categor});
     }catch(err){
