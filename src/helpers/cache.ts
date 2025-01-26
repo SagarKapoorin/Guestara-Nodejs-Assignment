@@ -4,6 +4,7 @@ import { Error } from "mongoose";
 import mongoose from "mongoose";
 const exec = mongoose.Query.prototype.exec;
 import { createClient } from "redis";
+import dotenv from "dotenv";
 dotenv.config();
 //mongoose orm modification to embed redis in it
 // modify redis url according
