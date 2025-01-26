@@ -146,3 +146,37 @@ ItemsRouter.get("/:name",async(req,res)=>{
             res.status(400).json({message:"Error "+err});
         }
 })
+ItemsRouter.put("/:name",async(req,res)=>{
+  //updating item under name
+    try{
+        const {name}=req.params;
+        const { image, description, baseAmount, discount, categoryName, subCategoryName, taxApplicable, tax } = req.body;
+        //check if category or subcategory name is exist
+        const categoryMatch = await Category.findOne({
+          $and: [
+            categoryName ? { name: categoryName } : {},
+            subCategoryName ? { name: subCategoryName } : {},
+          ],
+        });
+        if (!categoryMatch) {
+          res.status(404).json({ error: "No matching category or subcategory found" });
+          return;
+        }
+        const updateData: any = {};
+        if (image) updateData.image = image;
+        if (description) updateData.description = description;
+        if (baseAmount) updateData.baseAmount = baseAmount;
+        if (discount) updateData.discount = discount;
+        if (categoryName) updateData.category = categoryName;
+        if (subCategoryName) updateData.subCategory = subCategoryName;
+        if (taxApplicable !== undefined) updateData.taxApplicable = taxApplicable;
+        if (tax) updateData.tax = tax;
+
+        const updatedItem = await Items.findOneAndUpdate({ name: name }, updateData, { new: true });
+        await clearHash("Items");
+        res.status(200).json({Item:updatedItem});
+    }catch(err){
+        console.log(err);
+        res.status(400).json({message:"Error "+err});
+    } 
+})
