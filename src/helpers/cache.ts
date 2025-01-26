@@ -4,6 +4,7 @@ import { Error } from "mongoose";
 import mongoose from "mongoose";
 const exec = mongoose.Query.prototype.exec;
 import { createClient } from "redis";
+dotenv.config();
 //mongoose orm modification to embed redis in it
 // modify redis url according
 const redisUrl = process.env.redisUrl || "redis://127.0.0.1:6379";
